@@ -1,19 +1,19 @@
 <template>
-  <div class="card m-3" style="width: 300px;">
+  <div v-if="account" class="card m-3" style="width: 300px;">
     <div class="card-body">
       <h5 class="card-title">
-        {{ this.account.name }}
+        {{ account.name }}
       </h5>
       <h6 class="card-text">
-        {{ amount(this.account.balance) }}
+        {{ amount(account.balance) }}
       </h6>
     </div>
     <ul class="list-group list-group-flush">
-      <li class="list-group-item">Available: {{ amount(this.account.available) }}</li>
-      <li class="list-group-item">Credit: {{ amount(this.account.creditLimit) }}</li>
+      <li class="list-group-item">Available: {{ amount(account.available) }}</li>
+      <li class="list-group-item">Credit: {{ amount(account.creditLimit) }}</li>
     </ul>
     <div class="card-footer text-end">
-      {{ this.account.accountNumber }}
+      {{ account.accountNumber }}
     </div>
   </div>
 </template>

@@ -1,8 +1,8 @@
 <template>
 
-  <div class="container">
+  <div class="container" v-if="accountBlocks">
     <div
-        v-for="(row, index) in this.accountBlocks"
+        v-for="(row, index) in accountBlocks"
         :key="index"
         class="card-group"
     >
