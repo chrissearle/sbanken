@@ -5,15 +5,17 @@
         {{ account.name }}
       </h5>
       <h6 class="card-text">
-        {{ amount(account.balance) }}
+        {{ displayAmount(account.balance) }}
       </h6>
     </div>
     <ul class="list-group list-group-flush">
-      <li class="list-group-item">Available: {{ amount(account.available) }}</li>
-      <li class="list-group-item">Credit: {{ amount(account.creditLimit) }}</li>
+      <li class="list-group-item">Available: {{ displayAmount(account.available) }}</li>
+      <li class="list-group-item">Credit: {{ displayAmount(account.creditLimit) }}</li>
     </ul>
     <div class="card-footer text-end">
-      {{ account.accountNumber }}
+      <router-link :to="`/transactions/${account.accountId}`">
+        {{ account.accountNumber }}
+      </router-link>
     </div>
   </div>
 </template>
@@ -21,22 +23,13 @@
 <script lang="ts">
 import {defineComponent, PropType} from "vue";
 import Account from "@/types/Account";
+import {amount} from "@/utils";
 
 export default defineComponent({
   name: "account-overview",
-  data() {
-    return {
-      currencyFormatter: new Intl.NumberFormat("no-NO", {
-        style: "currency",
-        currency: "NOK",
-      }),
-    }
-  },
   methods: {
-    amount(amount: number): string {
-      return this.currencyFormatter.format(
-          amount
-      );
+    displayAmount(val: number): string {
+      return amount(val);
     },
   },
   props: {

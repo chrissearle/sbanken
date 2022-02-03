@@ -1,9 +1,13 @@
-import http from "@/api-client";
+import http from '@/api-client'
 
 class ApiService {
-    getAccounts(): Promise<any> {
-        return http.get("/");
-    }
+  getAccounts(): Promise<any> {
+    return http.get('/')
+  }
+
+  getTransactions(id: string): Promise<any> {
+    return http.get(`/${id}`)
+  }
 }
 
-export default new ApiService();
+export default new ApiService()
