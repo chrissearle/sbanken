@@ -39,5 +39,5 @@ docker build -t sbanken:latest .
 ## Run
 
 ```
-docker run -d -e CLIENT_ID=... -e CLIENT_SECRET=... -p 8080:8080 --rm fellesutgifter:latest
+docker run -d -e CLIENT_ID=... -e CLIENT_SECRET=... -p 8080:8080 --rm sbanken:latest
 ```
