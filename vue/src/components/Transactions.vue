@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts">
-import {defineComponent, PropType} from "vue";
+import {defineComponent} from "vue";
 import ApiService from "@/services/ApiService";
 import ResponseData from "@/types/ResponseData";
 import TransactionList from "@/types/TransactionsList";
