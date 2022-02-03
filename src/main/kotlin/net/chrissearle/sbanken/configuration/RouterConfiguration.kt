@@ -10,6 +10,7 @@ class RouterConfiguration {
     @Bean
     fun routes(handler: AccountsHandler) = coRouter {
         GET("/accounts", handler::accounts)
+        GET("/accounts/{id}", handler::transactions)
     }
 }
 
