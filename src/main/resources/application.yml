@@ -1,0 +1,12 @@
+spring:
+  main:
+    banner-mode: off
+
+sbanken:
+  client-id: ${CLIENT_ID}
+  client-secret: ${CLIENT_SECRET}
+  auth-url: https://auth.sbanken.no/identityserver/connect/token
+  api-base: https://publicapi.sbanken.no/apibeta/
+  api-version: api/v2
+
+
