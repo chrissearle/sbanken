@@ -5,8 +5,12 @@ class ApiService {
     return http.get('/')
   }
 
-  getTransactions(id: string): Promise<any> {
+  getAccount(id: string): Promise<any> {
     return http.get(`/${id}`)
+  }
+
+  getTransactions(id: string): Promise<any> {
+    return http.get(`/${id}/transactions`)
   }
 }
 

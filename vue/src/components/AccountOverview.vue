@@ -13,7 +13,7 @@
       <li class="list-group-item">Credit: {{ displayAmount(account.creditLimit) }}</li>
     </ul>
     <div class="card-footer text-end">
-      <router-link :to="`/transactions/${account.accountId}`">
+      <router-link :to="`/detail/${account.accountId}`">
         {{ account.accountNumber }}
       </router-link>
     </div>

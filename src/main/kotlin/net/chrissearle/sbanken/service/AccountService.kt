@@ -103,6 +103,28 @@ class AccountService(
             }
     }
 
+    suspend fun getAccount(id: String): Account {
+        val token = authService.getAuthHeader()
+
+        return webClientBuilder
+            .defaultHeaders { it.setBearerAuth(token) }
+            .baseUrl(buildUrl("/Accounts"))
+            .build()
+            .get()
+            .uri {
+                it
+                    .path("/{id}")
+                    .build(id)
+            }
+            .awaitExchange {
+                if (it.statusCode().is2xxSuccessful) {
+                    it.awaitBody()
+                } else {
+                    throw ResponseStatusException(it.statusCode(), it.awaitBody())
+                }
+            }
+    }
+
     suspend fun transactions(id: String): TransactionList {
         val token = authService.getAuthHeader()
 

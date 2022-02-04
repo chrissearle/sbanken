@@ -12,10 +12,14 @@ class AccountsHandler(val accountService: AccountService) {
         return ServerResponse.ok().bodyValueAndAwait(accountService.getAccounts())
     }
 
-    suspend fun transactions(req: ServerRequest): ServerResponse {
-        val id = req.pathVariable("id")
+    suspend fun account(req: ServerRequest): ServerResponse {
+        return ServerResponse.ok().bodyValueAndAwait(accountService.getAccount(req.pathVariable("id")))
+    }
 
-        return ServerResponse.ok().bodyValueAndAwait(accountService.transactions(id))
+
+    suspend fun transactions(req: ServerRequest): ServerResponse {
+
+        return ServerResponse.ok().bodyValueAndAwait(accountService.transactions(req.pathVariable("id")))
     }
 
 }

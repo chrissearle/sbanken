@@ -8,10 +8,10 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('./components/Accounts.vue'),
   },
   {
-    path: '/transactions/:id',
-    name: 'transactions',
+    path: '/detail/:id',
+    name: 'detail',
     props: true,
-    component: () => import('./components/Transactions.vue'),
+    component: () => import('./components/AccountDetail.vue'),
   },
 ]
 
