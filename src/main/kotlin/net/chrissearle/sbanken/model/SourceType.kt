@@ -1,2 +1,5 @@
-package net.chrissearle.sbanken.model 
+package net.chrissearle.sbanken.model
 
+enum class SourceType {
+    AccountStatement, Archive
+}

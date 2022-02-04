@@ -12,6 +12,7 @@ class RouterConfiguration {
         GET("/accounts", handler::accounts)
         GET("/accounts/{id}", handler::account)
         GET("/accounts/{id}/transactions", handler::transactions)
+        POST("/accounts/transfer", handler::transfer)
     }
 }
 

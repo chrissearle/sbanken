@@ -1,82 +1,19 @@
 package net.chrissearle.sbanken.service
 
+import mu.KotlinLogging
 import net.chrissearle.sbanken.configuration.SbankenConfiguration
+import net.chrissearle.sbanken.model.Account
+import net.chrissearle.sbanken.model.AccountList
+import net.chrissearle.sbanken.model.TransactionList
+import net.chrissearle.sbanken.model.Transfer
 import org.springframework.stereotype.Service
+import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.awaitExchange
 import org.springframework.web.server.ResponseStatusException
 
-data class Account(
-    val accountId: String,
-    val accountNumber: String,
-    val name: String,
-    val accountType: String,
-    val available: Double,
-    val balance: Double,
-    val creditLimit: Double
-)
-
-data class AccountList(
-    val availableItems: Int,
-    val items: List<Account>
-)
-
-enum class ReservationType {
-    NotReservation, VisaReservation, PurchaseReservation, AtmReservation
-}
-
-enum class SourceType {
-    AccountStatement, Archive
-}
-
-data class CardDetails(
-    val cardNumber: String?,
-    val currencyAmount: Double,
-    val currencyRate: Double,
-    val merchantCategoryCode: String?,
-    val merchantCategoryDescription: String?,
-    val merchantCity: String?,
-    val merchantName: String?,
-    val originalCurrencyCode: String?,
-    val purchaseDate: String,
-    val transactionId: String
-)
-
-data class TransactionDetail(
-    val formattedAccountNumber: String?,
-    val transactionId: Int,
-    val cid: String,
-    val amountDescription: String,
-    val receiverName: String?,
-    val numericReference: Int,
-    val payerName: String?,
-    val registrationDate: String?
-)
-
-data class Transaction(
-    val accountingDate: String,
-    val interestDate: String?,
-    val otherAccountNumber: String?,
-    val otherAccountNumberSpecified: Boolean,
-    val amount: Double,
-    val text: String?,
-    val transactionType: String?,
-    val transactionTypeCode: Int,
-    val transactionTypeText: String,
-    val isReservation: Boolean,
-    val reservationType: ReservationType?,
-    val source: SourceType,
-    val cardDetailsSpecified: Boolean,
-    val cardDetails: CardDetails?,
-    val transactionDetailSpecified: Boolean,
-    val transactionDetail: TransactionDetail?
-)
-
-data class TransactionList(
-    val availableItems: Int,
-    val items: List<Transaction>
-)
+private val logger = KotlinLogging.logger {}
 
 @Service
 class AccountService(
@@ -89,6 +26,8 @@ class AccountService(
     suspend fun getAccounts(): AccountList {
         val token = authService.getAuthHeader()
 
+        logger.debug { "Fetching accounts" }
+
         return webClientBuilder
             .defaultHeaders { it.setBearerAuth(token) }
             .baseUrl(buildUrl("/Accounts"))
@@ -96,15 +35,24 @@ class AccountService(
             .get()
             .awaitExchange {
                 if (it.statusCode().is2xxSuccessful) {
+                    logger.debug { "Accounts retrieved" }
+
                     it.awaitBody()
                 } else {
-                    throw ResponseStatusException(it.statusCode(), it.awaitBody())
+                    val errorBody = it.awaitBody<String>()
+
+                    logger.error { "Accounts: ${it.statusCode()} gave $errorBody" }
+
+                    throw ResponseStatusException(it.statusCode(), errorBody)
                 }
             }
+
     }
 
     suspend fun getAccount(id: String): Account {
         val token = authService.getAuthHeader()
+
+        logger.debug { "Fetching account $id" }
 
         return webClientBuilder
             .defaultHeaders { it.setBearerAuth(token) }
@@ -118,15 +66,23 @@ class AccountService(
             }
             .awaitExchange {
                 if (it.statusCode().is2xxSuccessful) {
+                    logger.debug { "Account $id retrieved" }
+
                     it.awaitBody()
                 } else {
-                    throw ResponseStatusException(it.statusCode(), it.awaitBody())
+                    val errorBody = it.awaitBody<String>()
+
+                    logger.error { "Account $id: ${it.statusCode()} gave $errorBody" }
+
+                    throw ResponseStatusException(it.statusCode(), errorBody)
                 }
             }
     }
 
     suspend fun transactions(id: String): TransactionList {
         val token = authService.getAuthHeader()
+
+        logger.debug { "Fetching transactions for account $id" }
 
         return webClientBuilder
             .defaultHeaders { it.setBearerAuth(token) }
@@ -141,9 +97,41 @@ class AccountService(
             }
             .awaitExchange {
                 if (it.statusCode().is2xxSuccessful) {
+                    logger.debug { "Transactions for account $id retrieved" }
+
                     it.awaitBody()
                 } else {
-                    throw ResponseStatusException(it.statusCode(), it.awaitBody())
+                    val errorBody = it.awaitBody<String>()
+
+                    logger.error { "Transactions for account $id: ${it.statusCode()} gave $errorBody" }
+
+                    throw ResponseStatusException(it.statusCode(), errorBody)
+                }
+            }
+    }
+
+    suspend fun transfer(transfer: Transfer): String {
+        val token = authService.getAuthHeader()
+
+        logger.debug { "Transferring $transfer" }
+
+        return webClientBuilder
+            .defaultHeaders { it.setBearerAuth(token) }
+            .baseUrl(buildUrl("/Transfers"))
+            .build()
+            .post()
+            .body(BodyInserters.fromValue(transfer))
+            .awaitExchange {
+                if (it.statusCode().is2xxSuccessful) {
+                    logger.debug { "Transfer $transfer posted" }
+
+                    "OK"
+                } else {
+                    val errorBody = it.awaitBody<String>()
+
+                    logger.error { "Transfer $transfer: ${it.statusCode()} gave $errorBody" }
+
+                    throw ResponseStatusException(it.statusCode(), errorBody)
                 }
             }
     }
