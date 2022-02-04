@@ -13,6 +13,11 @@ const routes: Array<RouteRecordRaw> = [
     props: true,
     component: () => import('./components/AccountDetail.vue'),
   },
+  {
+    path: '/transfer',
+    name: 'transfer',
+    component: () => import('./components/Transfer.vue'),
+  },
 ]
 
 const router = createRouter({
