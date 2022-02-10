@@ -2,6 +2,7 @@ spring:
   main:
     banner-mode: off
 
+
 sbanken:
   client-id: ${CLIENT_ID}
   client-secret: ${CLIENT_SECRET}
@@ -9,4 +10,8 @@ sbanken:
   api-base: https://publicapi.sbanken.no/apibeta/
   api-version: api/v2
 
+logging:
+  level:
+    net:
+      chrissearle: debug
 

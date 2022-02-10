@@ -12,6 +12,8 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.awaitBody
 import org.springframework.web.reactive.function.client.awaitExchange
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 private val logger = KotlinLogging.logger {}
 
@@ -21,6 +23,8 @@ class AccountService(
     val config: SbankenConfiguration,
     val webClientBuilder: WebClient.Builder
 ) {
+    val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("YYYY-MM-dd")
+
     fun buildUrl(api: String) = "${config.apiBase}${config.apiVersion}$api"
 
     suspend fun getAccounts(): AccountList {
@@ -92,7 +96,8 @@ class AccountService(
             .uri {
                 it
                     .path("/{id}")
-                    .queryParam("length", "20")
+                    .queryParam("length", "100")
+                    .queryParam("startDate", formatter.format(LocalDate.now().minusDays(365)))
                     .build(id)
             }
             .awaitExchange {
