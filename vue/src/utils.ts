@@ -62,21 +62,13 @@ export const balanceTransactionsByDay = (
   finalBalance: number
 ): number[] => {
   var balance = 0
-  console.log(finalBalance)
-
-  console.log(transactionSums)
-
   const balanced = transactionSums.map((amount) => {
     balance = balance + amount
 
     return balance
   })
 
-  console.log(balanced)
-
   const offset = finalBalance - balanced[balanced.length - 1]
-
-  console.log(offset)
 
   return balanced.map((tx) => {
     return tx + offset
