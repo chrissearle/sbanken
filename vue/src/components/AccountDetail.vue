@@ -41,13 +41,16 @@ import { defineComponent } from "vue";
 import ApiService from "@/services/ApiService";
 import ResponseData from "@/types/ResponseData";
 import TransactionList from "@/types/TransactionsList";
-import TransactionSum from "@/types/TransactionSum";
-import { amount, sumTransactionsByDay, balanceTransactionsByDay } from "@/utils";
-import moment from "moment";
+import {
+  amount,
+  sumTransactionsByDay,
+  balanceTransactionsByDay,
+} from "@/utils";
 import Account from "@/types/Account";
 import AccountOverview from "./AccountOverview.vue";
 import { BarChart, LineChart } from "vue-chart-3";
 import { Chart, TooltipItem, registerables } from "chart.js";
+import { DateTime } from "luxon";
 
 Chart.register(...registerables);
 
@@ -105,14 +108,17 @@ export default defineComponent({
     };
   },
   props: {
-    id: String,
+    id: {
+      type: String,
+      required: true,
+    },
   },
   methods: {
     displayAmount(val: number): string {
       return amount(val);
     },
     displayDate(val: string): string {
-      return moment(val).format("DD-MM-YYYY");
+      return DateTime.fromFormat(val, "yyyy-MM-dd").toFormat("yyyy-MM-dd");
     },
   },
   mounted() {
@@ -126,7 +132,9 @@ export default defineComponent({
               this.transactions = response.data;
 
               if (this.transactions?.items) {
-                const transactionSum = sumTransactionsByDay(this.transactions.items);
+                const transactionSum = sumTransactionsByDay(
+                  this.transactions.items
+                );
 
                 const labels = transactionSum.map((tx) => tx.accountingDate);
                 const sumAmounts = transactionSum.map((tx) => tx.amount);
@@ -140,9 +148,11 @@ export default defineComponent({
                 );
 
                 this.$data.barChartProps.chartData.labels = labels;
-                this.$data.barChartProps.chartData.datasets[0].data = sumAmounts;
+                this.$data.barChartProps.chartData.datasets[0].data =
+                  sumAmounts;
                 this.$data.balanceChartProps.chartData.labels = labels;
-                this.$data.balanceChartProps.chartData.datasets[0].data = balanceSum;
+                this.$data.balanceChartProps.chartData.datasets[0].data =
+                  balanceSum;
               }
             })
             .catch((e: Error) => {

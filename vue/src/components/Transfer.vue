@@ -117,103 +117,103 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent } from 'vue'
-  import ApiService from '@/services/ApiService'
-  import ResponseData from '@/types/ResponseData'
-  import { amount } from '@/utils'
-  import Account from '@/types/Account'
-  import AccountsList from '@/types/AccountsList'
+import { defineComponent } from "vue";
+import ApiService from "@/services/ApiService";
+import ResponseData from "@/types/ResponseData";
+import { amount } from "@/utils";
+import Account from "@/types/Account";
+import AccountsList from "@/types/AccountsList";
 
-  export default defineComponent({
-    name: 'transfer',
-    data() {
-      return {
-        accounts: {} as AccountsList | null,
-        from: {} as Account | null,
-        to: {} as Account | null,
-        amount: 0.0,
-        message: '',
-        statusMessage: '',
-        errorMessage: '',
-        transferring: false,
+export default defineComponent({
+  name: "transfer",
+  data() {
+    return {
+      accounts: {} as AccountsList | null,
+      from: {} as Account | null,
+      to: {} as Account | null,
+      amount: 0.0,
+      message: "",
+      statusMessage: "",
+      errorMessage: "",
+      transferring: false,
+    };
+  },
+  methods: {
+    transfer() {
+      this.statusMessage = "";
+      this.errorMessage = "";
+      if (this.validTransfer) {
+        this.transferring = true;
+        ApiService.postTransfer(
+          this.from!.accountId || "",
+          this.to!.accountId,
+          this.amount,
+          this.message
+        )
+          .then((response: ResponseData) => {
+            this.from = this.accounts?.items[0] || null;
+            this.to = this.accounts?.items[0] || null;
+            this.amount = 0;
+            this.message = "";
+            this.statusMessage = response.data;
+            this.transferring = false;
+          })
+          .catch((e: Error) => {
+            this.errorMessage = "Transfer failed";
+            this.transferring = false;
+            console.log(e);
+          });
       }
     },
-    methods: {
-      transfer() {
-        this.statusMessage = ''
-        this.errorMessage = ''
-        if (this.validTransfer) {
-          this.transferring = true
-          ApiService.postTransfer(
-            this.from!.accountId || '',
-            this.to!.accountId,
-            this.amount,
-            this.message
-          )
-            .then((response: ResponseData) => {
-              this.from = this.accounts?.items[0] || null
-              this.to = this.accounts?.items[0] || null
-              this.amount = 0
-              this.message = ''
-              this.statusMessage = response.data
-              this.transferring = false
-            })
-            .catch((e: Error) => {
-              this.errorMessage = 'Transfer failed'
-              this.transferring = false
-              console.log(e)
-            })
-        }
-      },
-      displayAmount(val: number): string {
-        return amount(val)
-      },
-      updateFrom(event: Event) {
-        this.from = this.findAccount(event)
-      },
-      updateTo(event: Event) {
-        this.to = this.findAccount(event)
-      },
-      findAccount(event: Event): Account | null {
-        if (event) {
-          let option = event.target as HTMLInputElement
+    displayAmount(val: number): string {
+      return amount(val);
+    },
+    updateFrom(event: Event) {
+      this.from = this.findAccount(event);
+    },
+    updateTo(event: Event) {
+      this.to = this.findAccount(event);
+    },
+    findAccount(event: Event): Account | null {
+      if (event) {
+        let option = event.target as HTMLInputElement;
 
-          return (
-            this.accounts?.items?.filter(
-              (item) => item.accountId === option.value
-            )[0] || null
-          )
-        } else {
-          return null
-        }
-      },
-    },
-    computed: {
-      validTransfer(): boolean {
         return (
-          this.from != null &&
-          this.to != null &&
-          this.from?.accountId !== this.to?.accountId &&
-          this.amount > 0 &&
-          this.message.length >= 3 &&
-          this.message.length <= 30 &&
-          !this.transferring
-        )
-      },
-      accountOptions(): Account[] {
-        return this.accounts?.items || []
-      },
+          this.accounts?.items?.filter(
+            (item) => item.accountId === option.value
+          )[0] || null
+        );
+      } else {
+        return null;
+      }
     },
-    mounted() {
-      ApiService.getAccounts()
-        .then((response: ResponseData) => {
-          this.accounts = response.data
-          this.from = this.accounts?.items[0] || null
-          this.to = this.accounts?.items[0] || null
-        })
-        .catch((e: Error) => {
-          console.log(e)
-        })
+  },
+  computed: {
+    validTransfer(): boolean {
+      return (
+        this.from != null &&
+        this.to != null &&
+        this.from?.accountId !== this.to?.accountId &&
+        this.amount > 0 &&
+        this.message.length >= 3 &&
+        this.message.length <= 30 &&
+        !this.transferring
+      );
     },
-  })
+    accountOptions(): Account[] {
+      return this.accounts?.items || [];
+    },
+  },
+  mounted() {
+    ApiService.getAccounts()
+      .then((response: ResponseData) => {
+        this.accounts = response.data;
+        this.from = this.accounts?.items[0] || null;
+        this.to = this.accounts?.items[0] || null;
+      })
+      .catch((e: Error) => {
+        console.log(e);
+      });
+  },
+});
 </script>

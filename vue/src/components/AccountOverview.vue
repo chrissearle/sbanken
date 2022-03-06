@@ -28,19 +28,22 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent, PropType } from 'vue'
-  import Account from '@/types/Account'
-  import { amount } from '@/utils'
+import { defineComponent, PropType } from "vue";
+import Account from "@/types/Account";
+import { amount } from "@/utils";
 
-  export default defineComponent({
-    name: 'account-overview',
-    methods: {
-      displayAmount(val: number): string {
-        return amount(val)
-      },
+export default defineComponent({
+  name: "account-overview",
+  methods: {
+    displayAmount(val: number): string {
+      return amount(val);
     },
-    props: {
-      account: Object as PropType<Account>,
+  },
+  props: {
+    account: {
+      type: Object as PropType<Account>,
+      required: true,
     },
-  })
+  },
+});
 </script>
