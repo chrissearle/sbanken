@@ -98,8 +98,8 @@
       </button>
       <div v-if="validTransfer" class="mb-3 offset-sm-2 form-text">
         <p>
-          Transfer {{ displayAmount(amount) }} from {{ from.name }} to
-          {{ to.name }} for {{ message }}
+          Transfer {{ displayAmount(amount) }} from {{ from?.name }} to
+          {{ to?.name }} for {{ message }}
         </p>
       </div>
       <div v-if="!validTransfer" class="mb-3 offset-sm-2 form-text">
@@ -117,103 +117,118 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
-import ApiService from "@/services/ApiService";
-import ResponseData from "@/types/ResponseData";
-import { amount } from "@/utils";
-import Account from "@/types/Account";
-import AccountsList from "@/types/AccountsList";
+import { defineComponent } from 'vue'
+import ApiService from '@/services/ApiService'
+import ResponseData from '@/types/ResponseData'
+import { amount } from '@/utils'
+import Account from '@/types/Account'
+import AccountsList from '@/types/AccountsList'
 
 export default defineComponent({
-  name: "transfer",
+  name: 'transfer-form',
   data() {
     return {
-      accounts: {} as AccountsList | null,
-      from: {} as Account | null,
-      to: {} as Account | null,
+      accounts: { availableItems: 0, items: [] } as AccountsList,
+      from: {} as Account | undefined,
+      to: {} as Account | undefined,
       amount: 0.0,
-      message: "",
-      statusMessage: "",
-      errorMessage: "",
+      message: '',
+      statusMessage: '',
+      errorMessage: '',
       transferring: false,
-    };
+    }
   },
   methods: {
     transfer() {
-      this.statusMessage = "";
-      this.errorMessage = "";
+      this.statusMessage = ''
+      this.errorMessage = ''
+
       if (this.validTransfer) {
-        this.transferring = true;
+        this.transferring = true
+
+        // From and To of undefined would have failed in validTransfer
         ApiService.postTransfer(
-          this.from!.accountId || "",
+          /* eslint-disable @typescript-eslint/no-non-null-assertion */
+          this.from!.accountId,
           this.to!.accountId,
+          /* eslint-enable @typescript-eslint/no-non-null-assertion */
           this.amount,
           this.message
         )
           .then((response: ResponseData) => {
-            this.from = this.accounts?.items[0] || null;
-            this.to = this.accounts?.items[0] || null;
-            this.amount = 0;
-            this.message = "";
-            this.statusMessage = response.data;
-            this.transferring = false;
+            if (this.accounts.availableItems > 0) {
+              this.from = this.accounts.items[0]
+              this.to = this.accounts.items[0]
+            } else {
+              this.from = undefined
+              this.to = undefined
+            }
+
+            this.amount = 0
+            this.message = ''
+            this.statusMessage = response.data
+            this.transferring = false
           })
           .catch((e: Error) => {
-            this.errorMessage = "Transfer failed";
-            this.transferring = false;
-            console.log(e);
-          });
+            this.errorMessage = 'Transfer failed'
+            this.transferring = false
+            console.log(e)
+          })
       }
     },
     displayAmount(val: number): string {
-      return amount(val);
+      return amount(val)
     },
     updateFrom(event: Event) {
-      this.from = this.findAccount(event);
+      this.from = this.findAccount(event)
     },
     updateTo(event: Event) {
-      this.to = this.findAccount(event);
+      this.to = this.findAccount(event)
     },
-    findAccount(event: Event): Account | null {
+    findAccount(event: Event): Account | undefined {
       if (event) {
-        let option = event.target as HTMLInputElement;
+        let option = event.target as HTMLInputElement
 
         return (
-          this.accounts?.items?.filter(
+          this.accounts.items.filter(
             (item) => item.accountId === option.value
           )[0] || null
-        );
-      } else {
-        return null;
+        )
       }
     },
   },
   computed: {
     validTransfer(): boolean {
       return (
-        this.from != null &&
-        this.to != null &&
-        this.from?.accountId !== this.to?.accountId &&
+        this.from !== undefined &&
+        this.to !== undefined &&
+        this.from.accountId !== this.to.accountId &&
         this.amount > 0 &&
         this.message.length >= 3 &&
         this.message.length <= 30 &&
         !this.transferring
-      );
+      )
     },
     accountOptions(): Account[] {
-      return this.accounts?.items || [];
+      return this.accounts.items
     },
   },
   mounted() {
     ApiService.getAccounts()
       .then((response: ResponseData) => {
-        this.accounts = response.data;
-        this.from = this.accounts?.items[0] || null;
-        this.to = this.accounts?.items[0] || null;
+        this.accounts = response.data
+
+        if (this.accounts.availableItems > 0) {
+          this.from = this.accounts.items[0]
+          this.to = this.accounts.items[0]
+        } else {
+          this.from = undefined
+          this.to = undefined
+        }
       })
       .catch((e: Error) => {
-        console.log(e);
-      });
+        console.log(e)
+      })
   },
-});
+})
 </script>

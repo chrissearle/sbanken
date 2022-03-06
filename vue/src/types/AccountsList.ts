@@ -1,6 +1,6 @@
-import Account from "@/types/Account";
+import Account from '@/types/Account'
 
 export default interface AccountsList {
-  availableItems: number;
-  items: Account[];
+  availableItems: number
+  items: Account[]
 }

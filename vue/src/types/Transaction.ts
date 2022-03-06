@@ -1,42 +1,42 @@
 interface CardDetails {
-  cardNumber: string | null;
-  currencyAmount: number;
-  currencyRate: number;
-  merchantCategoryCode: string | null;
-  merchantCategoryDescription: string | null;
-  merchantCity: string | null;
-  merchantName: string | null;
-  originalCurrencyCode: string | null;
-  purchaseDate: string;
-  transactionId: string;
+  cardNumber?: string
+  currencyAmount: number
+  currencyRate: number
+  merchantCategoryCode?: string
+  merchantCategoryDescription?: string
+  merchantCity?: string
+  merchantName?: string
+  originalCurrencyCode?: string
+  purchaseDate: string
+  transactionId: string
 }
 
 interface TransactionDetail {
-  formattedAccountNumber: string | null;
-  transactionId: number;
-  cid: string;
-  amountDescription: string;
-  receiverName: string | null;
-  numericReference: number;
-  payerName: string | null;
-  registrationDate: string | null;
+  formattedAccountNumber?: string
+  transactionId: number
+  cid: string
+  amountDescription: string
+  receiverName?: string
+  numericReference: number
+  payerName?: string
+  registrationDate?: string
 }
 
 export default interface Transaction {
-  accountingDate: string;
-  interestDate: string | null;
-  otherAccountNumber: string | null;
-  otherAccountNumberSpecified: boolean;
-  amount: number;
-  text: string | null;
-  transactionType: string | null;
-  transactionTypeCode: number;
-  transactionTypeText: string;
-  isReservation: boolean;
-  reservationType: string | null;
-  source: string | null;
-  cardDetailsSpecified: boolean;
-  cardDetails: CardDetails | null;
-  transactionDetailSpecified: boolean;
-  transactionDetail: TransactionDetail | null;
+  accountingDate: string
+  interestDate?: string
+  otherAccountNumber?: string
+  otherAccountNumberSpecified: boolean
+  amount: number
+  text?: string
+  transactionType?: string
+  transactionTypeCode: number
+  transactionTypeText: string
+  isReservation: boolean
+  reservationType?: string
+  source?: string
+  cardDetailsSpecified: boolean
+  cardDetails?: CardDetails
+  transactionDetailSpecified: boolean
+  transactionDetail?: TransactionDetail
 }

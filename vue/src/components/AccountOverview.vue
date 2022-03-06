@@ -28,15 +28,15 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
-import Account from "@/types/Account";
-import { amount } from "@/utils";
+import { defineComponent, PropType } from 'vue'
+import Account from '@/types/Account'
+import { amount } from '@/utils'
 
 export default defineComponent({
-  name: "account-overview",
+  name: 'account-overview',
   methods: {
     displayAmount(val: number): string {
-      return amount(val);
+      return amount(val)
     },
   },
   props: {
@@ -45,5 +45,5 @@ export default defineComponent({
       required: true,
     },
   },
-});
+})
 </script>
