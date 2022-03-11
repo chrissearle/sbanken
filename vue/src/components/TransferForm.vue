@@ -1,3 +1,114 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
+import Account from '@/types/Account'
+import AccountsList from '@/types/AccountsList'
+
+import ApiService from '@/services/ApiService'
+
+import { amount } from '@/utils'
+
+const accounts = ref({ availableItems: 0, items: [] } as AccountsList)
+const from = ref(undefined as Account | undefined)
+const to = ref(undefined as Account | undefined)
+const transferAmount = ref(0.0)
+const message = ref('')
+const statusMessage = ref('')
+const errorMessage = ref('')
+const transferring = ref(false)
+
+const transfer = () => {
+  statusMessage.value = ''
+  errorMessage.value = ''
+
+  if (validTransfer()) {
+    transferring.value = true
+
+    // From and To of undefined would have failed in validTransfer
+    ApiService.postTransfer(
+      /* eslint-disable @typescript-eslint/no-non-null-assertion */
+      from.value!.accountId,
+      to.value!.accountId,
+      /* eslint-enable @typescript-eslint/no-non-null-assertion */
+      transferAmount.value,
+      message.value
+    )
+      .then((status: string) => {
+        if (accounts.value.availableItems > 0) {
+          from.value = accounts.value.items[0]
+          to.value = accounts.value.items[0]
+        } else {
+          from.value = undefined
+          to.value = undefined
+        }
+
+        transferAmount.value = 0
+        message.value = ''
+        statusMessage.value = status
+        transferring.value = false
+      })
+      .catch((e: Error) => {
+        errorMessage.value = 'Transfer failed'
+        transferring.value = false
+        console.log(e)
+      })
+  }
+}
+
+const updateFrom = (event: Event) => {
+  from.value = findAccount(event)
+}
+
+const updateTo = (event: Event) => {
+  to.value = findAccount(event)
+}
+
+const findAccount = (event: Event): Account | undefined => {
+  if (event) {
+    let option = event.target as HTMLInputElement
+
+    return (
+      accounts.value.items.filter(
+        (item) => item.accountId === option.value
+      )[0] || null
+    )
+  }
+}
+
+const validTransfer = (): boolean =>
+  from.value !== undefined &&
+  to.value !== undefined &&
+  from.value.accountId !== to.value.accountId &&
+  transferAmount.value > 0 &&
+  message.value.length >= 3 &&
+  message.value.length <= 30 &&
+  !transferring.value
+
+const accountOptions = (): Account[] => accounts.value.items
+
+const retrieve = () => {
+  ApiService.getAccounts()
+    .then((accountsList: AccountsList) => {
+      accounts.value = accountsList
+
+      if (accounts.value.availableItems > 0) {
+        from.value = accounts.value.items[0]
+        to.value = accounts.value.items[0]
+      } else {
+        from.value = undefined
+        to.value = undefined
+      }
+    })
+    .catch((e: Error) => {
+      console.log(e)
+    })
+}
+
+onMounted(() => {
+  retrieve()
+})
+</script>
+
 <template>
   <div class="container">
     <h4>Transfer</h4>
@@ -14,7 +125,7 @@
             @change="updateFrom"
           >
             <option
-              v-for="(account, fromIndex) in accountOptions"
+              v-for="(account, fromIndex) in accountOptions()"
               :key="fromIndex"
               :value="account.accountId"
             >
@@ -22,7 +133,7 @@
               -
               {{ account.name }}
               -
-              {{ displayAmount(account.available) }}
+              {{ amount(account.available) }}
             </option>
           </select>
         </div>
@@ -39,7 +150,7 @@
             @change="updateTo"
           >
             <option
-              v-for="(account, toIndex) in accountOptions"
+              v-for="(account, toIndex) in accountOptions()"
               :key="toIndex"
               :value="account.accountId"
             >
@@ -47,7 +158,7 @@
               -
               {{ account.name }}
               -
-              {{ displayAmount(account.available) }}
+              {{ amount(account.available) }}
             </option>
           </select>
         </div>
@@ -58,7 +169,7 @@
         <div class="col-sm-10">
           <input
             class="form-control"
-            v-model="amount"
+            v-model="transferAmount"
             id="amount"
             required
             name="amount"
@@ -86,7 +197,7 @@
       <button
         @click="transfer"
         class="btn btn-success offset-sm-2"
-        v-bind:disabled="!validTransfer"
+        v-bind:disabled="!validTransfer()"
       >
         <span
           v-if="transferring"
@@ -96,13 +207,13 @@
         />
         Transfer
       </button>
-      <div v-if="validTransfer" class="mb-3 offset-sm-2 form-text">
+      <div v-if="validTransfer()" class="mb-3 offset-sm-2 form-text">
         <p>
-          Transfer {{ displayAmount(amount) }} from {{ from?.name }} to
+          Transfer {{ amount(transferAmount) }} from {{ from?.name }} to
           {{ to?.name }} for {{ message }}
         </p>
       </div>
-      <div v-if="!validTransfer" class="mb-3 offset-sm-2 form-text">
+      <div v-if="!validTransfer()" class="mb-3 offset-sm-2 form-text">
         <p>Transfer not valid</p>
       </div>
     </div>
@@ -115,120 +226,3 @@
     </div>
   </div>
 </template>
-
-<script lang="ts">
-import { defineComponent } from 'vue'
-import ApiService from '@/services/ApiService'
-import ResponseData from '@/types/ResponseData'
-import { amount } from '@/utils'
-import Account from '@/types/Account'
-import AccountsList from '@/types/AccountsList'
-
-export default defineComponent({
-  name: 'transfer-form',
-  data() {
-    return {
-      accounts: { availableItems: 0, items: [] } as AccountsList,
-      from: {} as Account | undefined,
-      to: {} as Account | undefined,
-      amount: 0.0,
-      message: '',
-      statusMessage: '',
-      errorMessage: '',
-      transferring: false,
-    }
-  },
-  methods: {
-    transfer() {
-      this.statusMessage = ''
-      this.errorMessage = ''
-
-      if (this.validTransfer) {
-        this.transferring = true
-
-        // From and To of undefined would have failed in validTransfer
-        ApiService.postTransfer(
-          /* eslint-disable @typescript-eslint/no-non-null-assertion */
-          this.from!.accountId,
-          this.to!.accountId,
-          /* eslint-enable @typescript-eslint/no-non-null-assertion */
-          this.amount,
-          this.message
-        )
-          .then((response: ResponseData) => {
-            if (this.accounts.availableItems > 0) {
-              this.from = this.accounts.items[0]
-              this.to = this.accounts.items[0]
-            } else {
-              this.from = undefined
-              this.to = undefined
-            }
-
-            this.amount = 0
-            this.message = ''
-            this.statusMessage = response.data
-            this.transferring = false
-          })
-          .catch((e: Error) => {
-            this.errorMessage = 'Transfer failed'
-            this.transferring = false
-            console.log(e)
-          })
-      }
-    },
-    displayAmount(val: number): string {
-      return amount(val)
-    },
-    updateFrom(event: Event) {
-      this.from = this.findAccount(event)
-    },
-    updateTo(event: Event) {
-      this.to = this.findAccount(event)
-    },
-    findAccount(event: Event): Account | undefined {
-      if (event) {
-        let option = event.target as HTMLInputElement
-
-        return (
-          this.accounts.items.filter(
-            (item) => item.accountId === option.value
-          )[0] || null
-        )
-      }
-    },
-  },
-  computed: {
-    validTransfer(): boolean {
-      return (
-        this.from !== undefined &&
-        this.to !== undefined &&
-        this.from.accountId !== this.to.accountId &&
-        this.amount > 0 &&
-        this.message.length >= 3 &&
-        this.message.length <= 30 &&
-        !this.transferring
-      )
-    },
-    accountOptions(): Account[] {
-      return this.accounts.items
-    },
-  },
-  mounted() {
-    ApiService.getAccounts()
-      .then((response: ResponseData) => {
-        this.accounts = response.data
-
-        if (this.accounts.availableItems > 0) {
-          this.from = this.accounts.items[0]
-          this.to = this.accounts.items[0]
-        } else {
-          this.from = undefined
-          this.to = undefined
-        }
-      })
-      .catch((e: Error) => {
-        console.log(e)
-      })
-  },
-})
-</script>
